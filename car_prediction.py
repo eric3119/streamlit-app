@@ -116,7 +116,9 @@ def main():
 
 		prep_data = np.array(sample_data).reshape(1, -1)
 
-		model_choice = st.selectbox("Model Type",['naive bayes','logit','MLP classifier'])
+		model_choice = st.selectbox("Model Type",['naive bayes',
+										# 'logit','MLP classifier'
+										])
 		if st.button('Evaluate'):
 			if model_choice == 'logit':
 				predictor = load_prediction_models("models/logit_car_model.pkl")
