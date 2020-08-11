@@ -1,11 +1,7 @@
 # Interactive Web App with Streamlit and Scikit-learn
-Explore different datasets and classifier. This tutorial should demonstrate how easy interactive web applications can be build with *streamlit*. Streamlit lets you create apps for your machine learning projects with simple Python scripts. See official [streamlit website](https://www.streamlit.io/) for more info.
 
-## Preview
-![Example of Streamlit|635x380](data/example.gif)
-
-## Watch the Tutorial
-  [![Alt text](https://img.youtube.com/vi/Klqn--Mu2pE/hqdefault.jpg)](https://www.youtube.com/watch?v=Klqn--Mu2pE)
+## Implementation based on
+  [![Alt text](https://www.youtube.com/watch?v=DBBpLrhKzC8&t=530s)](https://www.youtube.com/watch?v=DBBpLrhKzC8&t=530s)
 
 ## Installation
 You need these dependencies:
@@ -18,5 +14,5 @@ pip install matplotlib
 ## Usage
 Run
 ```console
-streamlit run main.py
+streamlit run car_prediction.py
 ```

@@ -49,7 +49,7 @@ def main():
 	st.subheader("Streamlit ML App")
 	# st.image(load_image("cars_images/car1.jpg"),width=300, caption='Images')
 
-	activities = ['EDA','Prediction','Gallery','About']
+	activities = ['EDA','Prediction']
 	choices = st.sidebar.selectbox("Select Activity",activities)
 
 	if choices == 'EDA':
@@ -57,27 +57,27 @@ def main():
 		data = load_data('data/car_eval_dataset.csv')
 		st.dataframe(data.head(5))
 
-		if st.checkbox("Show Summary of Dataset"):
-			st.write(data.describe())
+		#if st.checkbox("Show Summary of Dataset"):
+		st.write(data.describe())
 
 		# Show Plots
-		if st.checkbox("Simple Value Plots "):
-			st.write(sns.countplot(data['class']))
-			# Use Matplotlib to render seaborn
-			st.pyplot()
+		# if st.checkbox("Simple Value Plots "):
+		st.write(sns.countplot(data['class']))
+		# Use Matplotlib to render seaborn
+		st.pyplot()
 
 		# Show Columns By Selection
-		if st.checkbox("Select Columns To Show"):
-			all_columns = data.columns.tolist()
-			selected_columns = st.multiselect('Select',all_columns)
-			new_df = data[selected_columns]
-			st.dataframe(new_df)
+		# if st.checkbox("Select Columns To Show"):
+		all_columns = data.columns.tolist()
+		selected_columns = st.multiselect('Select column',all_columns)
+		new_df = data[selected_columns]
+		st.dataframe(new_df)
 
-		if st.checkbox("Pie Plot"):
-				all_columns_names = data.columns.tolist()
-				if st.button("Generate Pie Plot"):
-					st.write(data.iloc[:,-1].value_counts().plot.pie(autopct="%1.1f%%"))
-					st.pyplot()
+		# if st.checkbox("Pie Plot"):
+		all_columns_names = data.columns.tolist()
+		# if st.button("Generate Pie Plot"):
+		st.write(data.iloc[:,-1].value_counts().plot.pie(autopct="%1.1f%%"))
+		st.pyplot()
 
 
 	if choices == 'Prediction':
