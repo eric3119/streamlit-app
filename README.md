@@ -15,5 +15,5 @@ streamlit run car_prediction.py
 ```
 
 ## Implementation based on
-  [![Alt text](https://img.youtube.com/vi/DBBpLrhKzC8/hqdefault.jpg)](https://www.youtube.com/watch?v=DBBpLrhKzC8)
+  [![Alt text](https://img.youtube.com/vi/biRIHpiOwU0/hqdefault.jpg)](https://www.youtube.com/watch?v=biRIHpiOwU0)
 
