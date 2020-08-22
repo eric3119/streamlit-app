@@ -20,6 +20,9 @@ def format_municipio(el):
     except:
         return 'Não encontrado'
 
+def format_uf(el):
+    return DICIONARIO['id_uf'][str(el)]
+
 DICIONARIO = {
     "id_uf":{
         "11": "RO",
@@ -60,18 +63,31 @@ data = load_data(DATA_URL)
 # Notify the reader that the data was successfully loaded.
 data_load_state.text("Done! (using st.cache)")
 
-if st.checkbox('Show raw data'):
-    st.subheader('Raw data')
-    st.write(data.head())
-
-st.write('id_prova_brasil, id_uf ,id_municipio ,id_serie')
-st.write(data['id_prova_brasil'].unique())
-st.write(data['id_serie'].unique())
-
-id_uf = st.sidebar.selectbox('UF', data['id_uf'].unique(), format_func=lambda el: DICIONARIO['id_uf'][str(el)])
+# filters
+id_uf = st.sidebar.selectbox('UF', data['id_uf'].unique(), format_func=format_uf)
 id_municipio = st.sidebar.selectbox('Município', data[data['id_uf'] == id_uf]['id_municipio'].unique(), format_func=format_municipio)
 
-st.write(id_uf)
+rows = ([
+        #'id_prova_brasil', 
+        #'id_uf', 
+        #'id_municipio', 
+        'id_escola',
+        'id_dependencia_adm',
+        'id_localizacao',
+        'id_turma',
+        'co_professor',
+        'id_serie',
+        'in_preenchimento_questionario'
+    ] + [f'tx_resp_q{x:03d}' for x in range(1,126)])
+
+filtered_data = data[data['id_municipio'] == id_municipio][rows]
+
+st.subheader(f'Filtros - UF:{format_uf(id_uf)}, Município:{format_municipio(id_municipio)}')
+st.write(f"{filtered_data['id_escola'].nunique()} escolas")
+if st.checkbox('Show raw data'):
+    st.write(filtered_data)
+    st.write(f'(linhas, colunas) = {filtered_data.shape}')
+
 #st.write(id_municipio)
 
-st.write(data['tx_resp_q001'].value_counts())
+st.write(filtered_data['tx_resp_q001'].value_counts())
