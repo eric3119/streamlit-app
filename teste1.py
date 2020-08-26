@@ -53,7 +53,26 @@ DICIONARIO = {
         "52": "GO",
         "53": "DF",
     },
-    "id_municipio": load_data('data/dicionario_municipios.csv').set_index('co_municipio').to_dict()['no_municipio']
+    "id_municipio": load_data('data/dicionario_municipios.csv').set_index('co_municipio').to_dict()['no_municipio'],
+    "id_serie":{
+        "5": "4ª série/5º ano EF",
+        "9": "8ª série/9º ano EF",
+        "12": "3ª Série do Ensino Médio",
+    },
+    "id_dependencia_adm":{
+        "1": "Federal",
+        "2": "Estadual",
+        "3": "Municipal",
+        "4": "Privada",
+    },
+    "id_localizacao":{
+        "1": "Urbana",
+        "2": "Rural",
+    },
+    "id_preenchimento_questionario":{
+        "0": "Não preenchido",
+        "1": "Preenchido parcial ou totalmente",
+    }
 }
 
 # Create a text element and let the reader know the data is loading.
@@ -78,11 +97,12 @@ rows = ([
         'co_professor',
         'id_serie',
         'in_preenchimento_questionario'
-    ] + [f'tx_resp_q{x:03d}' for x in range(1,126)])
+    ]# + [f'tx_resp_q{x:03d}' for x in range(1,126)]
+    )
 
 filtered_data = data[data['id_municipio'] == id_municipio][rows]
 
-st.subheader(f'Filtros - UF:{format_uf(id_uf)}, Município:{format_municipio(id_municipio)}')
+st.subheader(f'Filtros - UF: {format_uf(id_uf)}, Município: {format_municipio(id_municipio)}')
 st.write(f"{filtered_data['id_escola'].nunique()} escolas")
 if st.checkbox('Show raw data'):
     st.write(filtered_data)
@@ -90,4 +110,4 @@ if st.checkbox('Show raw data'):
 
 #st.write(id_municipio)
 
-st.write(filtered_data['tx_resp_q001'].value_counts())
+#st.write(filtered_data['tx_resp_q001'].value_counts())
