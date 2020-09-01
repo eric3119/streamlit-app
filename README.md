@@ -11,9 +11,5 @@ pip install matplotlib
 ## Usage
 Run
 ```console
-streamlit run car_prediction.py
+streamlit run main.py
 ```
-
-## Implementation based on
-  [![Alt text](https://img.youtube.com/vi/biRIHpiOwU0/hqdefault.jpg)](https://www.youtube.com/watch?v=biRIHpiOwU0)
-
