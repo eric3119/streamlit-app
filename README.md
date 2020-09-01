@@ -1,5 +1,3 @@
-# Interactive Web App with Streamlit and Scikit-learn
-
 ## Installation
 You need these dependencies:
 ```console
