@@ -1,109 +1,113 @@
-import streamlit as st 
-import numpy as np 
+import streamlit as st
+import pandas as pd
+import numpy as np
 
-import matplotlib.pyplot as plt
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
+DATA_URL = 'data/TS_PROFESSOR_2017.csv'
 
-from sklearn.decomposition import PCA
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
+st.title(DATA_URL)
 
-from sklearn.metrics import accuracy_score
+@st.cache
+def load_data(path):
+    data = pd.read_csv(path)
+    data = data.dropna()
+    lowercase = lambda x: str(x).lower()
+    data.rename(lowercase, axis='columns', inplace=True)
+    return data
 
-st.title('Streamlit Example')
+def format_municipio(el):
+    try:
+        return DICIONARIO['id_municipio'][el]
+    except:
+        return 'Não encontrado'
 
-st.write("""
-# Explore different classifier and datasets
-Which one is the best?
-""")
+def format_uf(el):
+    return DICIONARIO['id_uf'][str(el)]
 
-dataset_name = st.sidebar.selectbox(
-    'Select Dataset',
-    ('Iris', 'Breast Cancer', 'Wine')
-)
+DICIONARIO = {
+    "id_uf":{
+        "11": "RO",
+        "12": "AC",
+        "13": "AM",
+        "14": "RR",
+        "15": "PA",
+        "16": "AP",
+        "17": "TO",
+        "21": "MA",
+        "22": "PI",
+        "23": "CE",
+        "24": "RN",
+        "25": "PB",
+        "26": "PE",
+        "27": "AL",
+        "28": "SE",
+        "29": "BA",
+        "31": "MG",
+        "32": "ES",
+        "33": "RJ",
+        "35": "SP",
+        "41": "PR",
+        "42": "SC",
+        "43": "RS",
+        "50": "MS",
+        "51": "MT",
+        "52": "GO",
+        "53": "DF",
+    },
+    "id_municipio": load_data('data/dicionario_municipios.csv').set_index('co_municipio').to_dict()['no_municipio'],
+    "id_serie":{
+        "5": "4ª série/5º ano EF",
+        "9": "8ª série/9º ano EF",
+        "12": "3ª Série do Ensino Médio",
+    },
+    "id_dependencia_adm":{
+        "1": "Federal",
+        "2": "Estadual",
+        "3": "Municipal",
+        "4": "Privada",
+    },
+    "id_localizacao":{
+        "1": "Urbana",
+        "2": "Rural",
+    },
+    "id_preenchimento_questionario":{
+        "0": "Não preenchido",
+        "1": "Preenchido parcial ou totalmente",
+    }
+}
 
-st.write(f"## {dataset_name} Dataset")
+# Create a text element and let the reader know the data is loading.
+data_load_state = st.text('Loading data...')
+# Load 10,000 rows of data into the dataframe.
+data = load_data(DATA_URL)
+# Notify the reader that the data was successfully loaded.
+data_load_state.text("Done! (using st.cache)")
 
-classifier_name = st.sidebar.selectbox(
-    'Select classifier',
-    ('KNN', 'SVM', 'Random Forest')
-)
+# filters
+id_uf = st.sidebar.selectbox('UF', data['id_uf'].unique(), format_func=format_uf)
+id_municipio = st.sidebar.selectbox('Município', data[data['id_uf'] == id_uf]['id_municipio'].unique(), format_func=format_municipio)
 
-def get_dataset(name):
-    data = None
-    if name == 'Iris':
-        data = datasets.load_iris()
-    elif name == 'Wine':
-        data = datasets.load_wine()
-    else:
-        data = datasets.load_breast_cancer()
-    X = data.data
-    y = data.target
-    return X, y
+rows = ([
+        #'id_prova_brasil', 
+        #'id_uf', 
+        #'id_municipio', 
+        'id_escola',
+        'id_dependencia_adm',
+        'id_localizacao',
+        'id_turma',
+        'co_professor',
+        'id_serie',
+        'in_preenchimento_questionario'
+    ]# + [f'tx_resp_q{x:03d}' for x in range(1,126)]
+    )
 
-X, y = get_dataset(dataset_name)
-st.write('Shape of dataset:', X.shape)
-st.write('number of classes:', len(np.unique(y)))
+filtered_data = data[data['id_municipio'] == id_municipio][rows]
 
-def add_parameter_ui(clf_name):
-    params = dict()
-    if clf_name == 'SVM':
-        C = st.sidebar.slider('C', 0.01, 10.0)
-        params['C'] = C
-    elif clf_name == 'KNN':
-        K = st.sidebar.slider('K', 1, 15)
-        params['K'] = K
-    else:
-        max_depth = st.sidebar.slider('max_depth', 2, 15)
-        params['max_depth'] = max_depth
-        n_estimators = st.sidebar.slider('n_estimators', 1, 100)
-        params['n_estimators'] = n_estimators
-    return params
+st.subheader(f'Filtros - UF: {format_uf(id_uf)}, Município: {format_municipio(id_municipio)}')
+st.write(f"{filtered_data['id_escola'].nunique()} escolas")
+if st.checkbox('Show raw data'):
+    st.write(filtered_data)
+    st.write(f'(linhas, colunas) = {filtered_data.shape}')
 
-params = add_parameter_ui(classifier_name)
+#st.write(id_municipio)
 
-def get_classifier(clf_name, params):
-    clf = None
-    if clf_name == 'SVM':
-        clf = SVC(C=params['C'])
-    elif clf_name == 'KNN':
-        clf = KNeighborsClassifier(n_neighbors=params['K'])
-    else:
-        clf = clf = RandomForestClassifier(n_estimators=params['n_estimators'], 
-            max_depth=params['max_depth'], random_state=1234)
-    return clf
-
-clf = get_classifier(classifier_name, params)
-#### CLASSIFICATION ####
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1234)
-
-clf.fit(X_train, y_train)
-y_pred = clf.predict(X_test)
-
-acc = accuracy_score(y_test, y_pred)
-
-st.write(f'Classifier = {classifier_name}')
-st.write(f'Accuracy =', acc)
-
-#### PLOT DATASET ####
-# Project the data onto the 2 primary principal components
-pca = PCA(2)
-X_projected = pca.fit_transform(X)
-
-x1 = X_projected[:, 0]
-x2 = X_projected[:, 1]
-
-fig = plt.figure()
-plt.scatter(x1, x2,
-        c=y, alpha=0.8,
-        cmap='viridis')
-
-plt.xlabel('Principal Component 1')
-plt.ylabel('Principal Component 2')
-plt.colorbar()
-
-#plt.show()
-st.pyplot()
+#st.write(filtered_data['tx_resp_q001'].value_counts())
