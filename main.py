@@ -54,6 +54,8 @@ def classify(X, y, text):
     # Visualizando as features:
     st.write(text)
     st.write(features)
+    return fit.get_support(indices=True)
+
 
 def clear_variance(X):
     constant_filter = VarianceThreshold(threshold=0)
@@ -158,21 +160,36 @@ if st.checkbox('Show raw data'):
     st.write(filtered_data)
     st.write(f'(linhas, colunas) = {filtered_data.shape}')
 
-if st.checkbox('sklearn SelectKBest'):
-    res_municipios_filtered = res_municipios[res_municipios['id_municipio'] == id_municipio]
-    
-    municipio_professor = res_municipios_filtered.merge(filtered_data)
 
-    MEDIA_MT = municipio_professor['media_5_mt'].mean()
-    MEDIA_LP = municipio_professor['media_5_lp'].mean()
-    
+res_municipios_filtered = res_municipios[res_municipios['id_municipio'] == id_municipio]
+
+municipio_professor = res_municipios_filtered.merge(filtered_data)
+
+MEDIA_MT = municipio_professor['media_5_mt'].mean()
+MEDIA_LP = municipio_professor['media_5_lp'].mean()
+if st.checkbox('sklearn SelectKBest'):
     X = municipio_professor[[f'tx_resp_q{x:03d}' for x in range(1,126)]]
     X = X.apply(lambda x: list(map(ord, x)))
     X = clear_variance(X)
 
     y = municipio_professor['media_5_mt'].apply(lambda x: get_rank(x, MEDIA_MT))
-    classify(X,y, 'media_5_mt')
-    y = municipio_professor['media_5_lp'].apply(lambda x: get_rank(x, MEDIA_LP))
-    classify(X,y, 'media_5_lp')
+    cols = classify(X,y, 'media_5_mt')
+    st.write(X.iloc[:,cols])
 
-    
+    y = municipio_professor['media_5_lp'].apply(lambda x: get_rank(x, MEDIA_LP))
+    cols = classify(X,y, 'media_5_lp')
+    st.write(X.iloc[:,cols])
+
+if st.checkbox('sklearn LogisticRegression'):
+    from sklearn.linear_model import LogisticRegression
+    model = LogisticRegression(max_iter=2000)
+    from sklearn.feature_selection import RFE
+    rfe = RFE(model, 4)
+
+    X = municipio_professor[[f'tx_resp_q{x:03d}' for x in range(1,126)]]
+    X = X.apply(lambda x: list(map(ord, x)))
+    y = municipio_professor['media_5_mt'].apply(lambda x: get_rank(x, MEDIA_MT))
+    fit = rfe.fit(X, y)
+    cols = fit.get_support(indices=True)
+    st.write("Número de features: {}".format(fit.n_features_))
+    st.write(X.iloc[:,cols])
