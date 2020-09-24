@@ -9,7 +9,7 @@ DATA_URL = 'data/TS_PROFESSOR_2017.csv'
 RES_MUNICIPIOS_URL = 'data/TS_MUNICIPIO.xlsx'
 MUNICIPIOS_URL = 'data/dicionario_municipios.csv'
 
-st.title(DATA_URL)
+st.title(body=DATA_URL)
 
 @st.cache
 def load_data(path):
@@ -46,24 +46,15 @@ def get_rank(el, mean):
     else:
         return 3#'IGUAL A MEDIA'
 
-def classify(X, y, text):
-    kbest = SelectKBest(score_func=f_classif, k=4)
-    fit = kbest.fit(X,y)
-    features = fit.transform(X)
-
-    # Visualizando as features:
-    st.write(text)
-    st.write(features)
-    return fit.get_support(indices=True)
-
-
 def clear_variance(X):
-    constant_filter = VarianceThreshold(threshold=0)
+
+    threshold = 0
+    constant_filter = VarianceThreshold(threshold=threshold)
     constant_filter.fit(X)
     constant_columns = [column for column in X.columns if column not in X.columns[constant_filter.get_support()]]
     X_test = constant_filter.transform(X)
     
-    st.write("Removed columns VarianceThreshold(threshold=0)")
+    st.write(f"{len(constant_columns)} removed columns with {threshold} variance")
     st.write(constant_columns)
     
     return X[X.columns[constant_filter.get_support()]]
@@ -167,18 +158,24 @@ municipio_professor = res_municipios_filtered.merge(filtered_data)
 
 MEDIA_MT = municipio_professor['media_5_mt'].mean()
 MEDIA_LP = municipio_professor['media_5_lp'].mean()
-if st.checkbox('sklearn SelectKBest'):
+if st.checkbox(label='sklearn SelectKBest'):
+    import MLAlg.alg1 as alg1
     X = municipio_professor[[f'tx_resp_q{x:03d}' for x in range(1,126)]]
     X = X.apply(lambda x: list(map(ord, x)))
     X = clear_variance(X)
 
-    y = municipio_professor['media_5_mt'].apply(lambda x: get_rank(x, MEDIA_MT))
-    cols = classify(X,y, 'media_5_mt')
-    st.write(X.iloc[:,cols])
+    features, cols = alg1.classify(
+        X,municipio_professor['media_5_mt'].apply(lambda x: get_rank(x, MEDIA_MT))
+    )
 
-    y = municipio_professor['media_5_lp'].apply(lambda x: get_rank(x, MEDIA_LP))
-    cols = classify(X,y, 'media_5_lp')
-    st.write(X.iloc[:,cols])
+    st.write('media_5_mt')
+    st.write(X.iloc[:,cols].columns)
+
+    features, cols = alg1.classify(
+        X, municipio_professor['media_5_lp'].apply(lambda x: get_rank(x, MEDIA_LP))
+    )
+    st.write('media_5_lp')
+    st.write(X.iloc[:,cols].columns)
 
 if st.checkbox('sklearn LogisticRegression'):
     from sklearn.linear_model import LogisticRegression
